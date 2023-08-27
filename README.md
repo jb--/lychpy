@@ -8,6 +8,8 @@
 
 PyLychee is an unofficial Python wrapper for [Lychee](https://github.com/lycheeverse/lychee), a fast, async, stream-based link checker written in Rust. It allows you to use Lychee's functionality in your Python projects.
 
+> :warning: **Important Notice:** This project is still in development, and not ready for usage. Please check back later.
+
 ## Table of Contents
 
 - [Installation](#installation)
