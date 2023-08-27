@@ -1,0 +1,21 @@
+[package]
+name = "pylychee"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "pylychee"
+crate-type = ["cdylib"]
+
+[dependencies]
+futures = "0.3.28"
+http = "0.2.9"
+log = "0.4.20"
+lychee-lib = "0.13.0"
+octocrab = "0.29.3"
+pyo3 = "0.19.0"
+regex = "1.9.3"
+reqwest = "0.11.20"
+secrecy = "0.8.0"
+tokio = "1.32.0"
