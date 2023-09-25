@@ -1966,6 +1966,7 @@ dependencies = [
  "reqwest",
  "secrecy",
  "tokio",
+ "tokio-stream",
 ]
 
 [[package]]

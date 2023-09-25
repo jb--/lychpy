@@ -1,5 +1,5 @@
 // test me with: 
-// python -c "import pylychee; print(pylychee.check_website('https://bartnick.eu'))"
+// python -c "import pylychee; print(pylychee.check_website('https://example.com'))"
 
 use futures::StreamExt;
 use lychee_lib::ClientBuilder;
@@ -7,9 +7,14 @@ use lychee_lib::{Collector, Input, InputSource, Request};
 use pyo3::prelude::*;
 use reqwest::Url;
 use tokio::runtime::Builder;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 use lychee_lib::Uri;
-use futures::{stream};
+use futures::stream;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
+use pyo3::types::{PyList, PyDict, PyString};
+
+const CONCURRENT_REQUESTS: usize = 4;
 
 async fn fetch_urls_from_url(url: &str)-> HashSet<Uri> {
     // Collect all links from the following inputs
@@ -46,10 +51,91 @@ async fn inner_check(url: &str) {
 }
 
 #[pyfunction]
-pub fn check_website(url: &str) -> PyResult<()> {
+pub fn check_website(py: Python<'_>, url: &str) -> PyResult<String> {
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(inner_check(url));
-    Ok(())
+    Ok("ok".to_string())
+}
+#[pyclass]
+struct PyResponse {
+    url: String,
+    status: String,
+}
+
+#[pymethods]
+impl PyResponse {
+    #[getter(url)]
+    fn url(&self) -> PyResult<String> {
+       Ok(self.url.clone())
+    }
+    
+    #[getter(status)]
+    fn status(&self) -> PyResult<String> {
+       Ok(self.status.clone())
+    }
+
+    fn __str__(slf: PyRef<'_, Self>) -> PyResult<String> {
+        Ok(slf.url.clone())
+    }
+
+    fn __repr__(slf: PyRef<'_, Self>) -> PyResult<String> {
+        PyResponse::__str__(slf)
+    }
+}
+
+
+#[pyfunction]
+pub fn check_websites(py: Python<'_>, urls: &PyList) -> PyResult<Py<PyDict>>{
+    let rt = tokio::runtime::Runtime::new().unwrap();
+
+    let mut array : Vec<String> = vec![String::new(); urls.len()];
+    for (i, url) in urls.iter().enumerate() {
+        let url = url.downcast::<PyString>()?;
+        let url = url.to_string_lossy();
+        array[i] = url.clone().to_string();
+    }
+
+    let (send_req, recv_req) = mpsc::channel(CONCURRENT_REQUESTS);
+    let (send_resp, mut recv_resp) = mpsc::channel(CONCURRENT_REQUESTS);
+
+    // Queue requests
+    rt.spawn(async move {
+        for url in array {
+            let request = Request::try_from(url).unwrap();
+            send_req.send(request).await.unwrap();
+        }
+    });
+
+    // Create a default lychee client
+    let client = ClientBuilder::default().client().unwrap();
+
+    // Start receiving requests
+    // Requests get streamed into the client and run concurrently
+    rt.spawn(async move {
+        let mystream = ReceiverStream::new(recv_req);
+        mystream.for_each_concurrent(CONCURRENT_REQUESTS, 
+            |req| async {
+                let resp = client.check(req).await.unwrap();
+                send_resp.send(resp).await.unwrap();
+            },
+        )
+        .await;
+    });
+
+
+    let pymap = rt.block_on(async {
+        let map = PyDict::new(py);
+
+        while let Some(response) = recv_resp.recv().await {
+            let pyresp = PyResponse{url:response.1.to_string(), status:response.1.to_string()} ;
+            let pyresp_wrapped = Py::new(py, pyresp).unwrap();
+            map.set_item(response.0.to_string(), pyresp_wrapped).unwrap();
+        }
+        map
+    });
+
+    Ok(pymap.into())
+
 }
 
 #[pyfunction]
@@ -110,7 +196,9 @@ pub fn check(
 
 #[pymodule]
 fn pylychee(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<PyResponse>()?;
     m.add_function(wrap_pyfunction!(check, m)?)?;
     m.add_function(wrap_pyfunction!(check_website, m)?)?;
+    m.add_function(wrap_pyfunction!(check_websites, m)?)?;
     Ok(())
 }
