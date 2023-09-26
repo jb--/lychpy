@@ -22,6 +22,7 @@ struct PyResponse {
     is_timeout: bool,
     is_unsupported: bool,
     icon: String,
+    repr: String,
 }
 
 impl PyResponse {
@@ -35,7 +36,8 @@ impl PyResponse {
         let is_timeout = response_body.status.is_timeout();
         let is_unsupported = response_body.status.is_unsupported();
         let icon = response_body.status.icon().to_string();
-        PyResponse { uri, status, is_success, is_failure, is_excluded, is_timeout, is_unsupported, icon  }
+        let repr = response_body.to_string();
+        PyResponse { uri, status, is_success, is_failure, is_excluded, is_timeout, is_unsupported, icon , repr }
     }
 }
 
@@ -82,7 +84,7 @@ impl PyResponse {
     }
 
     fn __str__(slf: PyRef<'_, Self>) -> PyResult<String> {
-        Ok(slf.uri.clone())
+        Ok(slf.repr.clone())
     }
 
     fn __repr__(slf: PyRef<'_, Self>) -> PyResult<String> {
