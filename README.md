@@ -13,18 +13,34 @@ LychPy is an unofficial Python wrapper for [Lychee](https://github.com/lycheever
 
 ## Installation
 
-TBD.
-Please ensure that you have the Lychee binary installed on your system. Follow the [installation instructions](https://github.com/lycheeverse/lychee#installation) provided by the Lychee project.
+```bash
+pip install lychpy
+```
 
 ## Usage
 
 ```python
-import lychpy
-
-result = lychpy.check(["https://example.com"])
-
-# Print the result
-print(result)
+Python 3.7.17 (default, Jun 14 2023, 09:26:35) 
+[GCC 9.3.1 20200408 (Red Hat 9.3.1-2)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import lychpy
+>>> lychpy.check(["https://bing.com", "https://google.com"])
+{'https://bing.com': ✔ [200] https://bing.com/, 'https://google.com': ✔ [200] https://google.com/}
+>>> url, result = lychpy.check(["https://bing.com"]).popitem()
+>>> result.is_excluded
+False
+>>> result.is_failure
+False
+>>> result.is_success
+True
+>>> result.is_timeout
+False
+>>> result.is_unsupported
+False
+>>> result.status
+'200'
+>>> result.url
+'https://bing.com/'
 ```
 
 ## Credits
