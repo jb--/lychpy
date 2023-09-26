@@ -1454,6 +1454,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "lychpy"
+version = "0.0.1"
+dependencies = [
+ "futures",
+ "http",
+ "log",
+ "lychee-lib",
+ "octocrab 0.29.3",
+ "pyo3",
+ "regex",
+ "reqwest",
+ "secrecy",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
 name = "mac"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1950,23 +1967,6 @@ dependencies = [
  "getopts",
  "memchr",
  "unicase",
-]
-
-[[package]]
-name = "pylychee"
-version = "0.0.1"
-dependencies = [
- "futures",
- "http",
- "log",
- "lychee-lib",
- "octocrab 0.29.3",
- "pyo3",
- "regex",
- "reqwest",
- "secrecy",
- "tokio",
- "tokio-stream",
 ]
 
 [[package]]

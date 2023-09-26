@@ -1,12 +1,6 @@
-# PyLychee
+# LychPy
 
-<!--
-![PyPI](https://img.shields.io/pypi/v/pylychee)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pylychee)
-![GitHub](https://img.shields.io/github/license/jb--/pylychee)
--->
-
-PyLychee is an unofficial Python wrapper for [Lychee](https://github.com/lycheeverse/lychee), a fast, async, stream-based link checker written in Rust. It allows you to use Lychee's functionality in your Python projects.
+LychPy is an unofficial Python wrapper for [Lychee](https://github.com/lycheeverse/lychee), a fast, async, stream-based link checker written in Rust. It allows you to use Lychee's functionality in your Python projects.
 
 > :warning: **Important Notice:** This project is still in development, and not ready for usage. Please check back later.
 
@@ -25,19 +19,9 @@ Please ensure that you have the Lychee binary installed on your system. Follow t
 ## Usage
 
 ```python
-from pylychee import Lychee
+import lychpy
 
-# Initialize the Lychee wrapper
-lychee = Lychee()
-
-# Check links in a local file
-result = lychee.check_file("README.md")
-
-# Check links on a website
-result = lychee.check_website("https://example.com")
-
-# Check links in a remote file
-result = lychee.check_remote_file("https://raw.githubusercontent.com/lycheeverse/lychee/master/README.md")
+result = lychpy.check(["https://example.com"])
 
 # Print the result
 print(result)
@@ -45,11 +29,11 @@ print(result)
 
 ## Credits
 
-This Python wrapper is built on top of the fantastic [Lychee](https://github.com/lycheeverse/lychee) project. All credits for the link checking functionality go to the original authors and contributors of Lychee.
+This Python wrapper is built on top of the [Lychee](https://github.com/lycheeverse/lychee) project. All credits for the link checking functionality go to the original authors and contributors of Lychee.
 
 ## License
 
-PyLychee is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+LychPy is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
 
 Lychee is licensed under either of
 

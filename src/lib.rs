@@ -1,5 +1,6 @@
 // test me with: 
-// python -c "import pylychee; print(pylychee.check(['https://example.com']))"
+// python -c "import lychpy; print(lychpy.check(['https://example.com']))"
+
 
 use futures::StreamExt;
 use lychee_lib::ClientBuilder;
@@ -150,7 +151,7 @@ pub fn check(py: Python<'_>, urls: &PyList) -> PyResult<Py<PyDict>>{
 }
 
 #[pymodule]
-fn pylychee(_py: Python, m: &PyModule) -> PyResult<()> {
+fn lychpy(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyResponse>()?;
     m.add_function(wrap_pyfunction!(check, m)?)?;
     Ok(())

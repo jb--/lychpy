@@ -1,10 +1,10 @@
-import pylychee
+import lychpy
 
 def test_double():
-    assert pylychee.double(2) == 4
+    assert lychpy.double(2) == 4
 
 def test_sum_as_string():
-    assert pylychee.sum_as_string(1, 2) == '3'
+    assert lychpy.sum_as_string(1, 2) == '3'
 
 
 test_double()
