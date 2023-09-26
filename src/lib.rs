@@ -4,6 +4,7 @@
 use futures::StreamExt;
 use lychee_lib::ClientBuilder;
 use lychee_lib::Request;
+use lychee_lib::Response;
 use pyo3::prelude::*;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
@@ -13,15 +14,36 @@ const CONCURRENT_REQUESTS: usize = 4;
 
 #[pyclass]
 struct PyResponse {
-    url: String,
+    uri: String,
     status: String,
+    is_success: bool,
+    is_failure: bool,
+    is_excluded: bool,
+    is_timeout: bool,
+    is_unsupported: bool,
+    icon: String,
+}
+
+impl PyResponse {
+    fn from(resp:  Response) -> Self {
+        let response_body = resp.1;
+        let status = response_body.status.code_as_string();
+        let uri = response_body.uri.to_string();
+        let is_success = response_body.status.is_success();
+        let is_failure = response_body.status.is_failure();
+        let is_excluded = response_body.status.is_excluded();
+        let is_timeout = response_body.status.is_timeout();
+        let is_unsupported = response_body.status.is_unsupported();
+        let icon = response_body.status.icon().to_string();
+        PyResponse { uri, status, is_success, is_failure, is_excluded, is_timeout, is_unsupported, icon  }
+    }
 }
 
 #[pymethods]
 impl PyResponse {
     #[getter(url)]
-    fn url(&self) -> PyResult<String> {
-       Ok(self.url.clone())
+    fn uri(&self) -> PyResult<String> {
+       Ok(self.uri.clone())
     }
     
     #[getter(status)]
@@ -29,8 +51,38 @@ impl PyResponse {
        Ok(self.status.clone())
     }
 
+    #[getter(is_success)]
+    fn is_success(&self) -> PyResult<bool> {
+       Ok(self.is_success)
+    }
+
+    #[getter(is_failure)]
+    fn is_failure(&self) -> PyResult<bool> {
+       Ok(self.is_failure)
+    }
+
+    #[getter(is_excluded)]
+    fn is_excluded(&self) -> PyResult<bool> {
+       Ok(self.is_excluded)
+    }
+
+    #[getter(is_timeout)]
+    fn is_timeout(&self) -> PyResult<bool> {
+       Ok(self.is_timeout)
+    }
+
+    #[getter(is_unsupported)]
+    fn is_unsupported(&self) -> PyResult<bool> {
+       Ok(self.is_unsupported)
+    }
+
+    #[getter(icon)]
+    fn icon(&self) -> PyResult<String> {
+       Ok(self.icon.clone())
+    }
+
     fn __str__(slf: PyRef<'_, Self>) -> PyResult<String> {
-        Ok(slf.url.clone())
+        Ok(slf.uri.clone())
     }
 
     fn __repr__(slf: PyRef<'_, Self>) -> PyResult<String> {
@@ -56,8 +108,9 @@ pub fn check(py: Python<'_>, urls: &PyList) -> PyResult<Py<PyDict>>{
     // Queue requests
     rt.spawn(async move {
         for url in array {
-            let request = Request::try_from(url).unwrap();
-            send_req.send(request).await.unwrap();
+            if let Ok(request) = Request::try_from(url) {
+                send_req.send(request).await.unwrap();
+            }            
         }
     });
 
@@ -82,9 +135,10 @@ pub fn check(py: Python<'_>, urls: &PyList) -> PyResult<Py<PyDict>>{
         let map = PyDict::new(py);
 
         while let Some(response) = recv_resp.recv().await {
-            let pyresp = PyResponse{url:response.1.to_string(), status:response.1.to_string()} ;
+            let url = response.0.to_string().clone();
+            let pyresp = PyResponse::from(response);
             let pyresp_wrapped = Py::new(py, pyresp).unwrap();
-            map.set_item(response.0.to_string(), pyresp_wrapped).unwrap();
+            map.set_item(url, pyresp_wrapped).unwrap();
         }
         map
     });
