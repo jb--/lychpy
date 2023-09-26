@@ -4,6 +4,8 @@ LychPy is an unofficial Python wrapper for [Lychee](https://github.com/lycheever
 
 > :warning: **Important Notice:** This project is still in development, and not ready for usage. Please check back later.
 
+![Screencast](assets/screencast.svg)
+
 ## Table of Contents
 
 - [Installation](#installation)
